@@ -1,53 +1,62 @@
-import cv2
-import mediapipe as mp
-import serial
-import time
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
 
-# Configurar a porta serial (ajuste para a porta correta do seu Arduino)
-arduino = serial.Serial('COM5', 9600, timeout=1)
-time.sleep(2)  # Aguarda a inicialização da conexão serial
 
-# Inicializa o MediaPipe Hands
-mp_hands = mp.solutions.hands
-hands = mp_hands.Hands()
-mp_draw = mp.solutions.drawing_utils
+## recebe dois arrays do tipo numpy
+## executa calculo do Beta em "calculo.png"
+def calcula_M(lista_x, lista_y):
+    m = sum((lista_x - np.mean(lista_x)) * (lista_y - np.mean(lista_y))) / sum((lista_x - np.mean(lista_x))**2)
+    return m
 
-# Abrir um vídeo MP4
-video_path = "IMG_3175.mp4"  # Substitua pelo caminho do seu vídeo
-cap = cv2.VideoCapture(video_path) # 0 se fosse uma webcam
 
-while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        print("Fim do vídeo ou erro ao carregar.")
-        break
+## recebe dois arrays do tipo numpy
+## executa calculo do Alfa em "calculo.png"
+def calcula_b(lista_x, lista_y):
+  b = np.mean(lista_y) - calcula_M(lista_y, lista_x) * np.mean(lista_x)
+  return b
 
-    # Redimensiona o vídeo para 500x500
-    frame = cv2.resize(frame, (500, 500))
 
-    # Converte para RGB
-    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    result = hands.process(rgb_frame)
+## recebe dois arrays do tipo numpy, um valor de a e outro de b
+## retorna somatória dos erros de uma tentativa de a e b
+def calcula_erro(a, b, lista_x, lista_y):
+    erro_total = 0
+    for i in range(len(lista_y)):
+        y = a*lista_x[i] + b
+        erro_total += (lista_y[i] - y)**2
+    return erro_total
 
-    if result.multi_hand_landmarks:
-        for hand_landmarks in result.multi_hand_landmarks:
-            mp_draw.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
-            # Detecta a posição do dedo indicador (índice 8)
-            index_finger_y = hand_landmarks.landmark[8].y
+## converte um excel em um dataframe tipo pandas
+data = pd.read_excel("data.xlsx")
+## converter coluna x to dataframe para um array tipo numpy
+data_x = data['x'].to_numpy()
+## converter coluna y to dataframe para um array tipo numpy
+data_y = data['y'].to_numpy()
 
-            # Define comandos baseados na posição do dedo
-            if index_finger_y < 0.5:  # Dedo levantado
-                arduino.write(b'1')  # Move para 90°
-            else:  # Dedo abaixado
-                arduino.write(b'2')  # Move para 180°
 
-    cv2.imshow("Video", frame)
+## array de 100 valores "aleatórios" entre -10 e 10
+array_a = np.linspace(-10, 10, 100)
+## array de 100 valores "aleatórios" entre -5 e 5
+array_b = np.linspace(-5, 5, 100)
+## já guardar a primeira amostra como menor
+amostra_do_menor_erro = {
+    "a": array_a[0],
+    "b": array_b[0],
+    "erro": calcula_erro(array_a[0], array_b[0], data_x, data_y)}
+## cria um array ou matriz de determinado tamanho
+## aqui serve para armazenar todos os erros
+erros = np.zeros(shape=(100, 100))
 
-    # Aguarda um pouco para sincronizar com a taxa de quadros do vídeo
-    if cv2.waitKey(30) & 0xFF == ord('q'):
-        break
 
-cap.release()
-cv2.destroyAllWindows()
-arduino.close()
+print(calcula_M(data_x, data_y))
+
+##  enumerate pega tanto índice como valor
+for ind_a,num_a in enumerate(array_a):
+    for ind_b,num_b in enumerate(array_b):
+        erro = calcula_erro(num_a,num_b, data_x, data_y)
+        if erro < amostra_do_menor_erro["erro"]:
+            amostra_do_menor_erro["a"] = num_a
+            amostra_do_menor_erro["b"] = num_b
+            amostra_do_menor_erro["erro"] = erro
+        erros[ind_a, ind_b] = erro

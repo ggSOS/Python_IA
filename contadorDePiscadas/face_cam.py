@@ -4,7 +4,7 @@ import serial                      # Comunicação com Arduino via porta serial
 import time                        # Usado para dar tempo de inicializar o Arduino
 
 # Inicia conexão com o Arduino (ajuste a porta conforme necessário)
-arduino = serial.Serial('COM4', 9600, timeout=1)
+arduino = serial.Serial('COM5', 9600, timeout=1)
 time.sleep(2)  # Aguarda o Arduino iniciar
 
 # Inicializa o detector de malha facial
@@ -12,7 +12,8 @@ mp_face = mp.solutions.face_mesh
 face_mesh = mp_face.FaceMesh(max_num_faces=1)
 mp_draw = mp.solutions.drawing_utils
 
-cap = cv2.VideoCapture(0)  # Usa a webcam
+# Abre a webcam(0) ou video("exercicio.mp4")
+cap = cv2.VideoCapture(0)
 
 # Variáveis de controle
 piscadas = 0
@@ -45,9 +46,9 @@ while True:
         )
 
         # Cálculo do EAR com 6 pontos do olho direito (lado esquerdo da imagem)
-        h = abs(pontos[33].x - pontos[133].x)
-        v1 = abs(pontos[159].y - pontos[145].y)
-        v2 = abs(pontos[158].y - pontos[153].y)
+        h = abs(pontos[33].x - pontos[133].x) ## extremidade direita à esquerda no olho direito
+        v1 = abs(pontos[159].y - pontos[145].y) ## extremidade superior à inferior no olho direito
+        v2 = abs(pontos[158].y - pontos[153].y) ## algum ponto da área superior à sua respectiva parte inferior no olho direito
         ear = (v1 + v2) / (2.0 * h)
 
         # Mostra o EAR na tela para fins de ajuste

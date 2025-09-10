@@ -1,3 +1,6 @@
-- Rodar exercicio_cam.py
-- Projeto no Wokwi
-  - https://wokwi.com/projects/441085737395611649
+# Dependências
+- pyhton -m pip install opencv-python mediapipe pyserial
+# Liberar câmera/audio caso esteja bloqueado
+- net start audiosrv
+# Projeto no Wokwi
+  - https://wokwi.com/projects/441718107724477441

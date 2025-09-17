@@ -1,0 +1,1 @@
+python -m pip install cmake dlib-bin opencv-python matplotlib pyserial notebook

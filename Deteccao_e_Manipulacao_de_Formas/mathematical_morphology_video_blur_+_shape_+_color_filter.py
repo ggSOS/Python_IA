@@ -20,9 +20,9 @@ while True:
     # BGR para HSV
     frame_hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     # Intervalo de azul escuro em HSV
-    ## H - cor mesmo - como metade de 210
-    ## S - intensidade- em 50 por padrao
-    ## V - luminosidade - em 50 por padrao
+    ## H - cor mesmo - cv2 utiliza 98 como metade de do 196 original do H
+    ## S - intensidade- em 50 min e 255 max por padrao
+    ## V - luminosidade - em 50 min e 255 max por padrao
     lower_color = np.array([98, 50, 20])
     upper_color = np.array([128, 255, 100])
     # Mascara para isolar o azul

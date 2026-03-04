@@ -9,7 +9,7 @@ img = cv2.imread("assets/rua.png")
 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 ## RGB -> cinza
 img_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-# plt.imshow(img_gray)
+# plt.imshow(img_gray) - print de checagem
 # plt.show()
 
 ## Destaque de Bordas
